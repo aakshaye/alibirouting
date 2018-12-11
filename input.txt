@@ -1,0 +1,5 @@
+node-4.test.ch-geni-net.instageni.washington.edu,-122.312316,47.661875,node-0.test.ch-geni-net.instageni.rutgers.edu,-74.445183,40.468090,illinois,0.0
+node-1.test.ch-geni-net.instageni.research.umich.edu,-83.71365,42.29062,node-0.test.ch-geni-net.instageni.rutgers.edu,-74.445183,40.468090,illinois,0.0
+node-0.test.ch-geni-net.instageni.rutgers.edu,-74.445183,40.468090,node-4.test.ch-geni-net.instageni.washington.edu,-122.312316,47.661875,illinois,0.0
+node-1.test.ch-geni-net.instageni.research.umich.edu,-83.71365,42.29062,node-0.test.ch-geni-net.instageni.rutgers.edu,-74.445183,40.468090,illinois,1.0
+node-3.test.ch-geni-net.instageni.idre.ucla.edu,-118.443056,34.069444,node-1.test.ch-geni-net.instageni.research.umich.edu,-83.71365,42.29062,seattle,0.0

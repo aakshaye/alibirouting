@@ -1,0 +1,1 @@
+node-3.test.ch-geni-net.instageni.idre.ucla.edu,-118.443056,34.069444,node-1.test.ch-geni-net.instageni.research.umich.edu,-83.71365,42.29062,seattle,0.0

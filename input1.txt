@@ -1,0 +1,1 @@
+node-1.test.ch-geni-net.instageni.research.umich.edu,-83.71365,42.29062,node-0.test.ch-geni-net.instageni.rutgers.edu,-74.445183,40.468090,illinois,0.0
