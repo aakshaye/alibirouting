@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 import socket
 import constants as c
 import util as u

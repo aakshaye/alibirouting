@@ -7,7 +7,7 @@ Prerequisites:
 		make -C target_region_computation/gc_distance
 
 Input Data:
-	The forbidden region must be defined on a map. An online tool can be used for this (https://clydedacruz.github.io/openstreetmap-wkt-playground/). The resulting WKB binary data should be dumped into a file (we used xxd for this). Our smaple file is named forbidden_region_illinois.dat.
+	The forbidden region must be defined on a map. An online tool can be used for this (https://clydedacruz.github.io/openstreetmap-wkt-playground/). The resulting WKB binary data should be dumped into a file (we used xxd for this). Our sample file is named forbidden_region_illinois.dat.
 
 	Further, the GPS coordinates of the current server are required, and so are the bootstrap node hostnames.
 
