@@ -177,7 +177,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
 
         # If current host is within the target region, our search for an alibi relay was
         # successful and we can respond accordingly
-        if Point(my_latlon_map["lon"], my_latlon_map["lat"]).intersects(tr):
+        if Point(my_latlon_map["lon"], my_latlon_map["lat"]).intersects(target_region):
             logging.info('QUERYID %s;SRC %s;DST %s;%s within relayzone', query, shost, dhost, my_hostname)
             response = M.ResponseQueryMsg(query, True, my_hostname, new_path)
             # would update query overheads at this point
@@ -224,14 +224,14 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                 n.remove_item_from_nlist(next_hop)
                 n.update_neighbor_list()
 
-            self.handle_query(data)
+            self.handle_query(q)
 
     
     def query_chk_req_handler(self, req):
         # Checks if the query with the given ID is active or not
         global active_queries
         query = req.param["query"]
-        reponse = M.QueryCheckReplyMsg(query, (1 if (query in active_queries) else 0))
+        response = M.QueryCheckReplyMsg(query, (1 if (query in active_queries) else 0))
         # update query overhead here
         r = M.asBytes(response)
         rbytes = r.encode("utf-8")
@@ -278,7 +278,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
             send_buf = list(set(n.clients+n.nodes+[(myip, my_latlon_map['lon'], my_latlon_map['lat'], 0.0)]))
         elif slon > - 1100:
             with n_lock:
-                if lat == 0:
+                if slat == 0:
                     # send back the gossip msg (containing neighbors)
                     send_buf = n.nodes
                 else:
@@ -302,7 +302,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
             logging.info("Node is not initialized yet")
             time.sleep(2)
 
-        #myip, myport = self.request.getsockname()
+        myip, myport = self.request.getsockname()
         #q = M.Msg.fromBytes(json_data)
         query = q.param["query"]
         shost = q.param["shost"]
@@ -388,7 +388,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
 
         # attempt to forward the query
         logging.info('QUERYID %s;SRC %s;DST %s;Trying to forward from source %s to %s', query, shost, dhost, myip ,next_hop)
-        to_send = M.QueryMsg(query, slat, slon, dlat, dlon, ttl, forbidden_region, target_region, path, shost, dhost)
+        to_send = M.QueryMsg(query, slat, slon, dlat, dlon, ttl, forbidden_region, target_region, new_path, shost, dhost)
         u.send_msg(next_hop, 23456, to_send)
         # IF THE QUERY COMPLETES SUCCESSFULLY, WE EXPECT THE RESULT TO ARRIVE IN THE QUEUE
         while True:
@@ -398,13 +398,13 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
             except:
                 # the read failed. Inform client that the query timed out
                 logging.info('QUERYID %d;SRC %s;DST %s;Query timed out', query, shost, dhost)
-                msg = M.ResponseQueryMsg(query_id, False, "Query timed out at source", '[]')
+                msg = M.ResponseQueryMsg(query, False, "Query timed out at source", '[]')
                 break
             
             if response:
-                msg = M.ResponseQueryMsg(query, response.params["succeeded"], response.params["result"], path)
-                if succeeded:
-                    logging.info('SUCCESS:: QUERYID %d;SRC %s;DST %s;Got a query response (Relay - %s)|%s', query, my_hostname, dhost, response.params["result"], path)
+                msg = M.ResponseQueryMsg(query, response.params["succeeded"], response.params["result"], new_path)
+                if response.params["succeeded"]:
+                    logging.info('SUCCESS:: QUERYID %d;SRC %s;DST %s;Got a query response (Relay - %s)|%s', query, my_hostname, dhost, response.params["result"], new_path)
                     break
                 else:
                     logging.info('FAILURE:: QUERYID %d;SRC %s;DST %s', query, my_hostname, dhost)
@@ -608,7 +608,7 @@ u.send_msg(HOST, PORT, join_msg, False)
 server_thread.join()
 
 gossip_timer.cancel()
-refresh_timer.cancel()
-nlist_req_timer.cancel()
+refresh_neighbors_timer.cancel()
+request_neighborlist_timer.cancel()
 server.shutdown()
 sys.exit(0)

@@ -81,7 +81,7 @@ def get_next_hop(query, hostname, slon, slat, dlon, dlat, avoid_zone, relay_zone
                     if distance < min_distance:
                         min_distance = distance
 
-            if start_min_distance < start_min_distance:
+            if min_distance < start_min_distance:
                 node_id = n_id
                 start_min_distance = min_distance
 
@@ -110,7 +110,7 @@ def nodelist_within_region(query_id, name, longitude, latitude, nodes_list, nn_l
                logging.info('No neighbors present for %s;', n_id)
                continue
 
-           for neighbor_new in nn_list:
+           for neighbor_new in nn_list[n_id]:
                (nn_id, nn_lat, nn_lon, nn_rtt) = neighbor_new
 
                if nn_rtt < latency_ar:
