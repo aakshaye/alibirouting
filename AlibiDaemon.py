@@ -414,7 +414,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
         with active_lock:
             active_queries.remove(query)
         with queryq_lock:
-            q.queue.clear()
+            syncQ.queue.clear()
 
         # update query overhead here
         # send a response to the client
