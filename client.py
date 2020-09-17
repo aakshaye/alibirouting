@@ -38,7 +38,7 @@ import AlibiMsg as msg
 sys.path.append(os.path.abspath('target_region_computation'))
 import regions as r
 
-time_to_live = c.TTL_LIST
+time_to_live = c.TTL_LIST[0]
 query_id = 0
 
 
