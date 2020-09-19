@@ -122,8 +122,7 @@ def nodelist_within_region(query_id, name, longitude, latitude, nodes_list, nn_l
 
 def node_in_path(target_ip, path):
     m_node = socket.gethostbyaddr(target_ip)
-
-    for nodes in path:
-        return m_node == nodes[0]
-
+    for node in path:
+        if m_node == node[0]:
+            return True
     return False

@@ -133,8 +133,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
 
     def pingHandler(self, m):
         nonce = int(m.param["nonce"])
-        p = M.Msg.asBytes(M.PingResponse(nonce))
-        pbytes = p.encode("utf-8")
+        pbytes = M.PingResponse(nonce).asBytes().encode("utf-8")
         self.request.sendall(pbytes)
 
     def query_handler(self, q):
@@ -236,8 +235,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
         query = req.param["query"]
         response = M.QueryCheckReplyMsg(query, (1 if (query in active_queries) else 0))
         # update query overhead here
-        r = M.asBytes(response)
-        rbytes = r.encode("utf-8")
+        rbytes = response.asBytes().encode("utf-8")
         self.request.sendall(rbytes)
 
     
