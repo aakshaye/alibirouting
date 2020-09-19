@@ -150,8 +150,8 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
         dlat = q.param["dlat"]
         dlon = q.param["dlon"]
         ttl = q.param["ttl"]
-        forbidden_region = q.param["fr"]
-        target_region = q.param["tr"]
+        forbidden_region = b_loads(bytes.fromhex(q.param["fr"]))
+        target_region = b_loads(bytes.fromhex(q.param["tr"]))
         path = q.param["path"]
 
         with qid_lock:
@@ -204,6 +204,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
             response = M.ResponseQueryMsg(query, False, my_hostname + ": No safe next hop", new_path)
             # update query overhead here
             u.send_msg(shost, 23456, response)
+            return
 
         # Not using query forking, so only pick best node for next hop
         next_hop = viable_nodes[0]
@@ -213,6 +214,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
             response = M.ResponseQueryMsg(query, False, my_hostname + ": No safe next hop", new_path)
             # update query overhead here
             u.send_msg(shost, 23456, response)
+            return
 
         # attempt to forward the query
         logging.info('QUERYID %s;SRC %s;DST %s;Trying to forward from %s to %s', query, shost, dhost, myip ,next_hop)
@@ -394,7 +396,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
         while True:
             try:
                 # perform a blocking read with a timeout.
-                response = q.get(True, c.TIMEOUT)
+                response = syncQ.get(True, c.TIMEOUT)
             except:
                 # the read failed. Inform client that the query timed out
                 logging.info('QUERYID %d;SRC %s;DST %s;Query timed out', query, shost, dhost)
@@ -512,11 +514,11 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
     #
     def refresh_neighbors_of_neighbors(self):
         # This task is only called when a timer expires
-        global request_neighborlist_timer
+        global refresh_neighbors_timer
 
         with n_lock:
             candidate_list = list(n.clients)
-            candidate_list.append(list(n.nodes))
+            candidate_list.extend(list(n.nodes))
 
         # refresh RTTs 
         refreshed_rtt_list = n.add_rtts(candidate_list)

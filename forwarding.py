@@ -69,12 +69,12 @@ def get_next_hop(query, hostname, slon, slat, dlon, dlat, avoid_zone, relay_zone
 
             min_distance = relay_region - avoided_region
 
-            latency_ar = get_latency(avoided_region)
+            latency_ar_tmp = get_latency(avoided_region)
 
             for neighbor_new in nn_list.get(n_id, []):
                 (nn_id, nn_lat, nn_lon, nn_rtt) = neighbor_new
 
-                if nn_rtt < latency_ar:
+                if nn_rtt < latency_ar_tmp:
                     distance = get_location(m_lat, m_lon, avoid_zone) - \
                                get_location(m_lat, m_lon, relay_zone)
 
