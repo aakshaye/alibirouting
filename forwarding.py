@@ -69,19 +69,19 @@ def get_next_hop(query, hostname, slon, slat, dlon, dlat, avoid_zone, relay_zone
 
             min_distance = relay_region - avoided_region
 
-            latency_ar = get_latency(avoided_region)
+            latency_ar_tmp = get_latency(avoided_region)
 
             for neighbor_new in nn_list.get(n_id, []):
                 (nn_id, nn_lat, nn_lon, nn_rtt) = neighbor_new
 
-                if nn_rtt < latency_ar:
+                if nn_rtt < latency_ar_tmp:
                     distance = get_location(m_lat, m_lon, avoid_zone) - \
                                get_location(m_lat, m_lon, relay_zone)
 
                     if distance < min_distance:
                         min_distance = distance
 
-            if start_min_distance < start_min_distance:
+            if min_distance < start_min_distance:
                 node_id = n_id
                 start_min_distance = min_distance
 
@@ -110,7 +110,7 @@ def nodelist_within_region(query_id, name, longitude, latitude, nodes_list, nn_l
                logging.info('No neighbors present for %s;', n_id)
                continue
 
-           for neighbor_new in nn_list:
+           for neighbor_new in nn_list[n_id]:
                (nn_id, nn_lat, nn_lon, nn_rtt) = neighbor_new
 
                if nn_rtt < latency_ar:
@@ -122,8 +122,7 @@ def nodelist_within_region(query_id, name, longitude, latitude, nodes_list, nn_l
 
 def node_in_path(target_ip, path):
     m_node = socket.gethostbyaddr(target_ip)
-
-    for nodes in path:
-        return m_node == nodes[0]
-
+    for node in path:
+        if m_node == node[0]:
+            return True
     return False
