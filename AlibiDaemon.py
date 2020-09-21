@@ -159,16 +159,16 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                 return
 
         # Add self to the path taken by the packet so far
-        new_path = path.append((my_hostname, my_latlon_map["lon"], my_latlon_map["lat"]))
+        path.append((my_hostname, my_latlon_map["lon"], my_latlon_map["lat"]))
         # We are not using query forking, so strategy is fixed
-        logging.info('QUERYID %s;SRC %s;DST %s;STRATEGY non-forking ;Hop Counts %d;ttl %d;Query Received', query, shost, dhost, len(new_path), ttl)
+        logging.info('QUERYID %s;SRC %s;DST %s;STRATEGY non-forking ;Hop Counts %d;ttl %d;Query Received', query, shost, dhost, len(path), ttl)
 
         # Check if the query has expired TTL
-        if len(new_path) > ttl:
+        if len(path) > ttl:
             # We are not using query forking, otherwise we would check strategy here
             # not storing query overhead at this point either
             # send a response to requester and exit
-            response = M.ResponseQueryMsg(query, False, my_hostname + ": TTL expired", new_path)
+            response = M.ResponseQueryMsg(query, False, my_hostname + ": TTL expired", path)
             u.send_msg(shost, 23456, response)
             return
 
@@ -178,7 +178,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
         # successful and we can respond accordingly
         if Point(my_latlon_map["lon"], my_latlon_map["lat"]).intersects(target_region):
             logging.info('QUERYID %s;SRC %s;DST %s;%s within relayzone', query, shost, dhost, my_hostname)
-            response = M.ResponseQueryMsg(query, True, my_hostname, new_path)
+            response = M.ResponseQueryMsg(query, True, my_hostname, path)
             # would update query overheads at this point
             u.send_msg(shost, 23456, response)
             return
@@ -187,8 +187,8 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
         target_node = f.nodelist_within_region(query, my_hostname, my_latlon_map["lon"], my_latlon_map["lat"], n.nodes, n.nn_list, forbidden_region, target_region)
         if target_node != None:
             # found some neighboring node within the target regions
-            # FIXME(ri): new_path should be update?
-            response = M.ResponseQueryMsg(query, True, target_node, new_path)
+            # FIXME(ri): path should be update?
+            response = M.ResponseQueryMsg(query, True, target_node, path)
             u.send_msg(shost, 23456, response)
             return
 
@@ -196,12 +196,12 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
         previous_node = self.request.getpeername()[0]
 
         # Now we must choose a safe next hop.
-        viable_nodes = f.get_next_hop(query, my_hostname, slon, slat, dlon, dlat, forbidden_region, target_region, my_latlon_map["lon"], my_latlon_map["lat"], n.nodes, n.nn_list, previous_node, new_path, 1)
+        viable_nodes = f.get_next_hop(query, my_hostname, slon, slat, dlon, dlat, forbidden_region, target_region, my_latlon_map["lon"], my_latlon_map["lat"], n.nodes, n.nn_list, previous_node, path, 1)
 
         # are there any safe nodes available?
         if len(viable_nodes) == 0:
             # no safe nodes - return with failure
-            response = M.ResponseQueryMsg(query, False, my_hostname + ": No safe next hop", new_path)
+            response = M.ResponseQueryMsg(query, False, my_hostname + ": No safe next hop", path)
             # update query overhead here
             u.send_msg(shost, 23456, response)
             return
@@ -211,14 +211,14 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
         
         if not next_hop:
             # no safe nodes - return with failure
-            response = M.ResponseQueryMsg(query, False, my_hostname + ": No safe next hop", new_path)
+            response = M.ResponseQueryMsg(query, False, my_hostname + ": No safe next hop", path)
             # update query overhead here
             u.send_msg(shost, 23456, response)
             return
 
         # attempt to forward the query
         logging.info('QUERYID %s;SRC %s;DST %s;Trying to forward from %s to %s', query, shost, dhost, myip ,next_hop)
-        query = M.QueryMsg(query, slat, slon, dlat, dlon, ttl, forbidden_region, target_region, new_path, shost, dhost)
+        query = M.QueryMsg(query, slat, slon, dlat, dlon, ttl, forbidden_region, target_region, path, shost, dhost)
         # update query overhead here
         if not u.send_msg(next_hop, 23456, query):
             logging.info('QUERYID %s;SRC %s;DST %s;Query forwarding to %s failed', query, shost, dhost, next_hop)
